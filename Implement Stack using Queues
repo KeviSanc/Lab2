@@ -1,0 +1,122 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Define a Queue structure
+typedef struct Queue {
+    int front, rear, size;
+    unsigned capacity;
+    int* array;
+} Queue;
+
+// Function to create a queue
+Queue* createQueue(unsigned capacity) {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    queue->capacity = capacity;
+    queue->front = 0;
+    queue->size = 0;
+    queue->rear = capacity - 1;
+    queue->array = (int*)malloc(queue->capacity * sizeof(int));
+    return queue;
+}
+
+// Function to check if the queue is full
+bool isFull(Queue* queue) {
+    return queue->size == queue->capacity;
+}
+
+// Function to check if the queue is empty
+bool isEmpty(Queue* queue) {
+    return queue->size == 0;
+}
+
+// Function to enqueue an item
+void enqueue(Queue* queue, int item) {
+    if (isFull(queue))
+        return;
+    queue->rear = (queue->rear + 1) % queue->capacity;
+    queue->array[queue->rear] = item;
+    queue->size++;
+}
+
+// Function to dequeue an item
+int dequeue(Queue* queue) {
+    if (isEmpty(queue))
+        return -1;
+    int item = queue->array[queue->front];
+    queue->front = (queue->front + 1) % queue->capacity;
+    queue->size--;
+    return item;
+}
+
+// Function to get the front item
+int front(Queue* queue) {
+    if (isEmpty(queue))
+        return -1;
+    return queue->array[queue->front];
+}
+
+// Stack using two queues
+typedef struct Stack {
+    Queue* queue1;
+    Queue* queue2;
+} Stack;
+
+// Function to create a stack
+Stack* createStack(unsigned capacity) {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->queue1 = createQueue(capacity);
+    stack->queue2 = createQueue(capacity);
+    return stack;
+}
+
+// Function to push an element onto the stack
+void push(Stack* stack, int item) {
+    enqueue(stack->queue2, item);
+
+    while (!isEmpty(stack->queue1)) {
+        enqueue(stack->queue2, dequeue(stack->queue1));
+    }
+
+    // Swap the roles of queue1 and queue2
+    Queue* temp = stack->queue1;
+    stack->queue1 = stack->queue2;
+    stack->queue2 = temp;
+}
+
+// Function to pop an element from the stack
+int pop(Stack* stack) {
+    return dequeue(stack->queue1);
+}
+
+// Function to get the top element of the stack
+int top(Stack* stack) {
+    return front(stack->queue1);
+}
+
+// Function to check if the stack is empty
+bool isStackEmpty(Stack* stack) {
+    return isEmpty(stack->queue1);
+}
+
+// Main function to test the stack
+int main() {
+    Stack* stack = createStack(10);
+
+    push(stack, 1);
+    push(stack, 2);
+    push(stack, 3);
+
+    printf("Top: %d\n", top(stack));
+    printf("Pop: %d\n", pop(stack));
+    printf("Top: %d\n", top(stack));
+
+    push(stack, 4);
+    printf("Pop: %d\n", pop(stack));
+    printf("Pop: %d\n", pop(stack));
+    printf("Pop: %d\n", pop(stack));
+
+    printf("Is Stack Empty: %d\n", isStackEmpty(stack));
+
+    return 0;
+}
