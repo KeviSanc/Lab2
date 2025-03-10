@@ -1,0 +1,102 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Define a stack structure
+typedef struct Stack {
+    int top;
+    int capacity;
+    int* array;
+} Stack;
+
+// Function to create a stack
+Stack* createStack(int capacity) {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->capacity = capacity;
+    stack->top = -1;
+    stack->array = (int*)malloc(stack->capacity * sizeof(int));
+    return stack;
+}
+
+// Function to push an element onto the stack
+void push(Stack* stack, int item) {
+    stack->array[++stack->top] = item;
+}
+
+// Function to pop an element from the stack
+int pop(Stack* stack) {
+    return stack->array[stack->top--];
+}
+
+// Function to check if the stack is empty
+bool isEmpty(Stack* stack) {
+    return stack->top == -1;
+}
+
+// Queue structure using two stacks
+typedef struct Queue {
+    Stack* inStack;
+    Stack* outStack;
+} Queue;
+
+// Function to create a queue
+Queue* createQueue(int capacity) {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    queue->inStack = createStack(capacity);
+    queue->outStack = createStack(capacity);
+    return queue;
+}
+
+// Function to push an element onto the queue
+void enqueue(Queue* queue, int item) {
+    push(queue->inStack, item);
+}
+
+// Helper function to transfer elements from inStack to outStack
+void transfer(Stack* inStack, Stack* outStack) {
+    while (!isEmpty(inStack)) {
+        push(outStack, pop(inStack));
+    }
+}
+
+// Function to dequeue an element from the queue
+int dequeue(Queue* queue) {
+    if (isEmpty(queue->outStack)) {
+        transfer(queue->inStack, queue->outStack);
+    }
+    return pop(queue->outStack);
+}
+
+// Function to get the front element of the queue
+int front(Queue* queue) {
+    if (isEmpty(queue->outStack)) {
+        transfer(queue->inStack, queue->outStack);
+    }
+    return queue->outStack->array[queue->outStack->top];
+}
+
+// Function to check if the queue is empty
+bool isQueueEmpty(Queue* queue) {
+    return isEmpty(queue->inStack) && isEmpty(queue->outStack);
+}
+
+// Main function to test the queue
+int main() {
+    Queue* queue = createQueue(10);
+
+    enqueue(queue, 1);
+    enqueue(queue, 2);
+    enqueue(queue, 3);
+
+    printf("Dequeue: %d\n", dequeue(queue));
+    printf("Front: %d\n", front(queue));
+
+    enqueue(queue, 4);
+    printf("Dequeue: %d\n", dequeue(queue));
+    printf("Dequeue: %d\n", dequeue(queue));
+    printf("Dequeue: %d\n", dequeue(queue));
+
+    printf("Is Queue Empty: %d\n", isQueueEmpty(queue));
+
+    return 0;
+}
